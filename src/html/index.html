@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$']], displayMath: [['$$','$$']]}});
+        </script>
+        <script type="text/javascript" async src="../js/MathJax/MathJax.js?config=TeX-AMS_SVG"></script>
+        <link rel="stylesheet" href="../css/master.css">
+        <title>Lamproof</title>
+    </head>
+    <body>
+        <div id='titlebar'>Lamproof</div>
+        <div id="content">
+            <div id="theorem">
+                <div id="theorem-label">
+                    Theorem
+                </div>
+                <div id="theorem-text" contenteditable>
+                    <span id="theorem-prefill" tabIndex="-1">Click to edit text</span>
+                </div>
+            </div>
+            <hr />
+            <div id="proof">
+                <div id="proof-label">
+                    Proof
+                </div>
+        </div>
+
+        <script src='../js/math_editor.js'></script>
+        <script src='../js/proof_editor.js'></script>
+        <script>
+            const {ipcRenderer} = require('electron');
+
+            ipcRenderer.on('window-blur', (event) => {
+                document.getElementById('titlebar').style.opacity = 0.5;
+            })
+            ipcRenderer.on('window-focus', (event) => {
+                document.getElementById('titlebar').style.opacity = 1;
+            })
+            ipcRenderer.on('set-title', (event, name) => {
+                const new_title = name + " — Lamproof"
+                document.getElementById('titlebar').innerHTML = new_title
+                document.title = new_title
+            })
+            ipcRenderer.on('enter-full-screen', () => {
+                document.getElementById('titlebar').style.height = '0px';
+            })
+            ipcRenderer.on('leave-full-screen', () => {
+                document.getElementById('titlebar').style.height = '1.5rem';
+            })
+
+            ipcRenderer.send('ready-to-show')
+
+            const theorem_text = document.getElementById("theorem-text")
+            const thm = new MathEditor(theorem_text)
+            const proofbox = document.getElementById("proof")
+            const proofer = new ProofEditor(proofbox)
+        </script>
+    </body>
+</html>

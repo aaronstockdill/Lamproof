@@ -1,0 +1,19 @@
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    font-family: "BlinkMacSystemFont";
+    font-size: 9pt;
+    margin: 0;
+    padding: 1rem;
+    position: relative;
+    height: 100%;
+    -webkit-app-region: drag;
+    text-align: center;
+}
+
+img {
+    width: 100px;
+    opacity: 1;
+}
