@@ -39,6 +39,22 @@ module.exports = class WindowManager
         }
     }
 
+    closeWindow () {
+        const win = BrowserWindow.getFocusedWindow();
+        if (win) {
+            const id = win.id
+            win.close()
+            this.windows.delete(id)
+        }
+    }
+
+    send (event_name, ...parameters) {
+        const win = BrowserWindow.getFocusedWindow();
+        if (win) {
+            win.webContents.send(event_name, ...parameters)
+        }
+    }
+
     createNewWindow () {
         const self = this
         const win = new BrowserWindow({

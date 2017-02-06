@@ -20,7 +20,50 @@ module.exports = class Menubar
                         click () {
                             self.wm.createNewWindow()
                         }
-                    }
+                    },
+                    {
+                        label: 'Open...',
+                        accelerator: 'CmdOrCtrl+O',
+                        click () {
+                            self.wm.send('open-file-data', "Unable to open files yet.")
+                        }
+                    },
+                    {
+                        type: 'separator'
+                    },
+                    {
+                        label: "Save",
+                        accelerator: 'CmdOrCtrl+S',
+                        click () {
+                            self.wm.send('save-file-request', "Unable to save files yet.")
+                        }
+                    },
+                    {
+                        label: "Save As...",
+                        accelerator: 'Shift+CmdOrCtrl+S',
+                        click () {
+                            self.wm.send('save-file-request', "Unable to save files yet.")
+                        }
+                    },
+                    {
+                        type: 'separator'
+                    },
+                    {
+                        label: "Close Window",
+                        accelerator: 'CmdOrCtrl+W',
+                        click () {
+                            self.wm.closeWindow()
+                        }
+                    },
+                    {
+                        label: "Close All Windows",
+                        accelerator: 'Shift+CmdOrCtrl+W',
+                        click () {
+                            while (self.wm.windows.size > 0) {
+                                self.wm.closeWindow()
+                            }
+                        }
+                    },
                 ]
             },
             {

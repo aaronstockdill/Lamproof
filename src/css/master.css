@@ -1,22 +1,24 @@
 * {
     box-sizing: border-box;
+    -webkit-user-select: none;
 }
 
 html, body {
-    font-family: "BlinkMacSystemFont";
-    font-size: 11pt;
+    font-family: "Computer Modern Serif";
+    font-size: 12pt;
     margin: 0;
     padding: 0;
     position: relative;
     height: 100%;
+    overflow: hidden;
 }
 
 #titlebar {
+    font-family: "BlinkMacSystemFont";
     width: 100%;
     height: 1.5rem;
     display: block;
     text-align: center;
-    -webkit-user-select: none;
     padding-top: 5px;
     padding-bottom: 3px;
     font-size: 10pt;
@@ -27,12 +29,15 @@ html, body {
 
 #content {
     position: absolute;
-    display: flex;
-    flex-direction: column;
     top: 1.5rem;
     bottom: 0;
     left: 0;
     right: 0;
+    overflow: hidden;
+}
+#resizer {
+    cursor: ns-resize;
+    height: 4px;
 }
 
 hr {
@@ -63,51 +68,63 @@ hr:after {
 
 
 #theorem {
+    position: relative;
     display: block;
     width: 100%;
     padding: 1rem 1rem 0 1rem;
-    overflow-y: auto;
-    max-height: 40%;
+    overflow: hidden;
+    height: 120px;
     margin-bottom: 1rem;
 }
 
 #theorem-label {
     font-weight: bold;
+    font-style: normal;
     padding: 0 1rem;
 }
 
 #theorem-text {
     border: 1px solid white;
-    padding: 0.6rem 1rem;
+    padding: 0.3rem 0.5rem;
     z-index: 2;
     border-radius: 3px;
-    height: auto;
-    min-height: 4rem;
-    margin: 0 1rem;
+    overflow-y: auto;
+    position: absolute;
+    top: 2.3rem;
+    bottom: 0;
+    left: 2rem;
+    right: 2rem;
+    -webkit-user-select: text;
 }
 
-#theorem-text:focus {
+#theorem-text.focussed {
     border: 1px solid silver;
     box-shadow: inset 0 0 5px #ddd;
     outline: none;
     font-family: "Menlo";
+    font-size: 11pt;
+}
+#theorem-text:focus {
+    outline: none;
 }
 
 #theorem-text #theorem-prefill {
+    position: relative;
     font-style: italic;
     opacity: 0.5;
-    z-index: 1;
+    z-index: -20;
 }
 
 
 
 #proof {
     display: block;
-    position: relative;;
-    flex-grow: 1;
-    padding: 0 1rem 1rem 1rem;
-    overflow: auto;
-    margin-top: 1.5rem;
+    position: absolute;
+    padding: 0 1rem;
+    overflow-y: auto;
+    bottom: 1rem;
+    left: 0;
+    right: 0;
 }
 
 #proof-label {
@@ -118,7 +135,6 @@ hr:after {
 .proof-statement {
     display: block;
     margin-bottom: 0.5rem;
-    border: 1px solid white;
     padding-left: 1rem;
     border-radius: 3px;
     height: auto;
@@ -130,22 +146,28 @@ hr:after {
     padding: 0.2rem;
     border: 1px solid white;
     border-radius: 3px;
+    -webkit-user-select: text;
 }
-.proof-text:focus {
+.proof-text.focussed {
     border: 1px solid silver;
     box-shadow: inset 0 0 5px #ddd;
     outline: none;
     font-family: "Menlo";
+    font-size: 11pt;
+}
+.proof-text:focus {
+    outline: none;
 }
 .proof-text .proof-prefill {
     font-style: italic;
     opacity: 0.5;
-    z-index: 1;
+    z-index: -10;
+    position: relative;
 }
 
 .proof-children {
     display: block;
-    transition: all 0.3s ease;
+    transition: height 0.3s ease-in-out;
     height: 0;
     overflow: hidden;
     margin-left: 1rem;
@@ -153,21 +175,23 @@ hr:after {
 
 .proof-disclosure {
     position: relative;
-    top: 0.1rem;
+    vertical-align: top;
+    top: 0.5rem;
     border: none;
     text-indent: -9999px;
     background: none;
     background-image: url(../images/triangle.svg);
     background-repeat: no-repeat;
     background-size: contain;
-    width: 0.8rem;
-    height: 0.8rem;
+    width: 0.6rem;
+    height: 0.6rem;
     outline: none;
     opacity: 0.6;
     margin-right: 0.5rem;
     transition: all 0.3s ease;
     transform: rotate(0deg);
     transform-origin: 30% 50%;
+    cursor: pointer;
 }
 
 .proof-disclosure:hover {
@@ -178,13 +202,63 @@ hr:after {
     transform: rotate(90deg);
 }
 
-.proof-add-statement {
+.proof-add-statement, .proof-self-evidence {
     background: none;
     border: none;
-    margin-left: 0.5rem;
+    margin: 0 0.5rem;
+    cursor: pointer;
 }
-.proof-add-statement:hover {
+.proof-add-statement:hover, .proof-self-evidence:hover {
     text-decoration: underline;
+}
+
+.proof-mini-or {
+    font-size: 7pt;
+}
+
+.proof-remove-statement {
+    position: relative;
+    vertical-align: top;
+    top: 0.5rem;
+    left: 0.3rem;
+    border: none;
+    text-indent: -9999px;
+    background: none;
+    background-image: url(../images/cross.svg);
+    background-repeat: no-repeat;
+    background-size: contain;
+    width: 0.8rem;
+    height: 0.8rem;
+    outline: none;
+    opacity: 0.6;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.proof-remove-statement:hover {
+    opacity: 1;
+}
+
+.proof-closure {
+    display: inline-block;
+    position: relative;
+    vertical-align: top;
+    top: 0.5rem;
+    left: 0.5rem;
+    border: none;
+    text-indent: -9999px;
+    width: 0.8rem;
+    height: 0.8rem;
+    outline: none;
+    border: 1px solid silver;
+    border-radius: 0.4rem;
+    transition: all 0.3s ease;
+}
+.proof-closure.open {
+    background-color: #fd6;
+}
+.proof-closure.closed {
+    background-color: #6f6;
 }
 
 

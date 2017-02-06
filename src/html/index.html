@@ -6,6 +6,7 @@
             MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$']], displayMath: [['$$','$$']]}});
         </script>
         <script type="text/javascript" async src="../js/MathJax/MathJax.js?config=TeX-AMS_SVG"></script>
+        <link rel="stylesheet" href="../fonts/Serif/cmun-serif.css">
         <link rel="stylesheet" href="../css/master.css">
         <title>Lamproof</title>
     </head>
@@ -16,19 +17,26 @@
                 <div id="theorem-label">
                     Theorem
                 </div>
-                <div id="theorem-text" contenteditable>
+                <div id="theorem-text">
                     <span id="theorem-prefill" tabIndex="-1">Click to edit text</span>
                 </div>
             </div>
-            <hr />
+            <div id="resizer">
+                <hr />
+            </div>
             <div id="proof">
                 <div id="proof-label">
                     Proof
                 </div>
+                <div id="proof-holder">
+
+                </div>
+            </div>
         </div>
 
         <script src='../js/math_editor.js'></script>
         <script src='../js/proof_editor.js'></script>
+        <script src='../js/layout.js'></script>
         <script>
             const {ipcRenderer} = require('electron');
 
@@ -52,10 +60,22 @@
 
             ipcRenderer.send('ready-to-show')
 
+            const theorembox = document.getElementById("theorem")
+            const proofbox = document.getElementById("proof")
             const theorem_text = document.getElementById("theorem-text")
             const thm = new MathEditor(theorem_text)
-            const proofbox = document.getElementById("proof")
-            const proofer = new ProofEditor(proofbox)
+            const proof_holder = document.getElementById("proof-holder")
+            const proofer = new ProofEditor(proof_holder)
+            const resizer = document.getElementById("resizer")
+            const layout = new Layout(resizer, theorembox, proofbox, thm)
+
+            ipcRenderer.on('save-file-request', (event, string) => {
+                alert(string)
+            })
+
+            ipcRenderer.on('open-file-data', (event, string) => {
+                alert(string)
+            })
         </script>
     </body>
 </html>

@@ -5,6 +5,8 @@ class MathEditor
     constructor (element) {
         this.theorem_text = element
         this.text_default = this.theorem_text.innerHTML.trim()
+        this.disable_activation = false
+        this.switched = false
         const self = this
 
         this.theorem_text.addEventListener('keydown',
@@ -13,8 +15,17 @@ class MathEditor
             // self._syntaxHighlight()
         }, true)
 
-        this.theorem_text.addEventListener('focus',
-        () => {
+        this.theorem_text.addEventListener('click',
+        (ev) => {
+            if (self.disable_activation !== false) {
+                self.disable_activation.focus()
+                ev.stopImmediatePropagation();
+                ev.preventDefault()
+                return;
+            }
+            self.switched = true
+            this.theorem_text.setAttribute("contenteditable", "true")
+            self.theorem_text.classList.add('focussed')
             if (self.theorem_text.innerHTML.trim() === self.text_default) {
                 self.theorem_text.innerHTML = ""
             }
@@ -24,13 +35,33 @@ class MathEditor
         }, false)
 
         this.theorem_text.addEventListener('focusout',
-        () => {
+        (ev) => {
+            if (self.switched === false || self.disable_activation) {
+                ev.stopImmediatePropagation();
+                ev.preventDefault()
+                return;
+            }
+            self.switched = false
+            this.theorem_text.setAttribute("contenteditable", "false")
+            self.theorem_text.classList.remove('focussed')
             self._unSyntaxHighlight()
-            if (self.theorem_text.innerHTML === "<div></div>" || self.theorem_text.innerHTML === "") {
+            const empty_box = false
+                || self.theorem_text.innerHTML === "<div></div>"
+                || self.theorem_text.innerHTML === ""
+                || self.theorem_text.innerHTML === "<br>"
+            if (empty_box) {
                 self.theorem_text.innerHTML = self.text_default
             }
             MathJax.Hub.Queue(["Typeset", MathJax.Hub, self.theorem_text])
         }, false)
+    }
+
+    disable () {
+        this.disable_activation = true
+    }
+
+    enable () {
+        this.disable_activation = false
     }
 
     _asPlainText () {
@@ -61,12 +92,11 @@ class MathEditor
             codeblocks[i].innerHTML = codeblocks[i].innerHTML.replace(/(\$\$?)/g, "<span class='latex-code dollars'>$1</span>")
             codeblocks[i].innerHTML = codeblocks[i].innerHTML.replace(/(\\[a-zA-Z]+)/g, "<span class='latex-code command'>$1</span>")
             codeblocks[i].innerHTML = codeblocks[i].innerHTML.replace(/(\[[^\]]+\])/g, "<span class='latex-code option'>$1</span>")
-            console.log(codeblocks[i].innerHTML)
         }
     }
 
     _unSyntaxHighlight () {
-        const codeblocks = this.theorem_text.getElementsByClassName("latex-code")
+        const codeblocks = this.theorem_text.getElementsByTagName("span")
         for (var i = codeblocks.length - 1; i >= 0; i--) {
             const chunk = codeblocks[i]
             var fragment = document.createDocumentFragment()
