@@ -1,6 +1,7 @@
 * {
     box-sizing: border-box;
     -webkit-user-select: none;
+    cursor: default;
 }
 
 html, body {
@@ -47,6 +48,7 @@ hr {
     border: none;
     background: silver;
     height: 1px;
+    cursor: ns-resize;
 }
 hr:before, hr:after {
     content: "";
@@ -56,6 +58,7 @@ hr:before, hr:after {
     position: relative;
     background: silver;
     height: 1px;
+    cursor: ns-resize;
 }
 hr:before {
     top: -2px;
@@ -86,7 +89,6 @@ hr:after {
 #theorem-text {
     border: 1px solid white;
     padding: 0.3rem 0.5rem;
-    z-index: 2;
     border-radius: 3px;
     overflow-y: auto;
     position: absolute;
@@ -95,6 +97,7 @@ hr:after {
     left: 2rem;
     right: 2rem;
     -webkit-user-select: text;
+    cursor: text;
 }
 
 #theorem-text.focussed {
@@ -112,7 +115,15 @@ hr:after {
     position: relative;
     font-style: italic;
     opacity: 0.5;
-    z-index: -20;
+    z-index: -1;
+    cursor: text;
+}
+
+#theorem-text .MathJax_Preview,
+#theorem-text .MathJax_SVG,
+#theorem-text .MathJax_SVG_Display,
+#theorem-text script {
+    z-index: -2;
 }
 
 
@@ -140,29 +151,39 @@ hr:after {
     height: auto;
 }
 
+.proof-numbering {
+    margin-right: 0.5rem;
+}
+
 .proof-text {
-    width: calc(100% - 5rem);
+    width: calc(100% - 6.5rem);
     display: inline-block;
     padding: 0.2rem;
     border: 1px solid white;
     border-radius: 3px;
     -webkit-user-select: text;
+    cursor: text;
 }
 .proof-text.focussed {
     border: 1px solid silver;
     box-shadow: inset 0 0 5px #ddd;
     outline: none;
     font-family: "Menlo";
+    padding: 0.2rem;
     font-size: 11pt;
 }
 .proof-text:focus {
     outline: none;
+}
+.proof-text.disabled {
+    cursor: default;
 }
 .proof-text .proof-prefill {
     font-style: italic;
     opacity: 0.5;
     z-index: -10;
     position: relative;
+    cursor: text;
 }
 
 .proof-children {
@@ -170,7 +191,7 @@ hr:after {
     transition: height 0.3s ease-in-out;
     height: 0;
     overflow: hidden;
-    margin-left: 1rem;
+    margin-left: 2rem;
 }
 
 .proof-disclosure {

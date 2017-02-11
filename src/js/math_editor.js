@@ -10,15 +10,21 @@ class MathEditor
         const self = this
 
         this.theorem_text.addEventListener('keydown',
-        () => {
-            // self._unSyntaxHighlight()
-            // self._syntaxHighlight()
+        (ev) => {
+            if (!dirty) {
+                ipcRenderer.send('set-dirty',
+                                 this_id,
+                                 true)
+                dirty = true
+            }
+            if (ev.keyCode == 13) {
+                self.theorem_text.blur()
+            }
         }, true)
 
         this.theorem_text.addEventListener('click',
         (ev) => {
-            if (self.disable_activation !== false) {
-                self.disable_activation.focus()
+            if (self.disable_activation) {
                 ev.stopImmediatePropagation();
                 ev.preventDefault()
                 return;
@@ -30,7 +36,6 @@ class MathEditor
                 self.theorem_text.innerHTML = ""
             }
             self._asPlainText()
-            self._syntaxHighlight()
             self.theorem_text.focus()
         }, false)
 
@@ -44,7 +49,6 @@ class MathEditor
             self.switched = false
             this.theorem_text.setAttribute("contenteditable", "false")
             self.theorem_text.classList.remove('focussed')
-            self._unSyntaxHighlight()
             const empty_box = false
                 || self.theorem_text.innerHTML === "<div></div>"
                 || self.theorem_text.innerHTML === ""
@@ -58,10 +62,12 @@ class MathEditor
 
     disable () {
         this.disable_activation = true
+        this.theorem_text.classList.add('disabled')
     }
 
     enable () {
         this.disable_activation = false
+        this.theorem_text.classList.remove('disabled')
     }
 
     _asPlainText () {
@@ -108,7 +114,7 @@ class MathEditor
         }
     }
 
-    getPlainText() {
+    getPlainText () {
         var the_html = this._asPlainText()
         MathJax.Hub.Queue(["Typeset", MathJax.Hub, this.theorem_text])
         the_html = the_html.replace(this.text_default, "")
@@ -116,5 +122,10 @@ class MathEditor
         the_html = the_html.replace(/<\/div><div>/g, "\n")
         the_html = the_html.replace(/<\/div>/, "")
         return the_html.trim()
+    }
+
+    fromText (text) {
+        this.theorem_text.innerHTML = text
+        MathJax.Hub.Queue(["Typeset", MathJax.Hub, this.theorem_text])
     }
 }

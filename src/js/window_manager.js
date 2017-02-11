@@ -1,5 +1,6 @@
 const {
-    BrowserWindow
+    BrowserWindow,
+    dialog
 } = require('electron')
 const path = require('path')
 const url = require('url')
@@ -25,22 +26,26 @@ module.exports = class WindowManager
             this._onRequestGetWindowIDs.bind(this));
     }
 
+    getFocusedWindow () {
+        return BrowserWindow.getFocusedWindow()
+    }
+
     reload () {
-        const win = BrowserWindow.getFocusedWindow();
+        const win = BrowserWindow.getFocusedWindow()
         if (win) {
             win.reload()
         }
     }
 
     toggleDevTools () {
-        const win = BrowserWindow.getFocusedWindow();
+        const win = BrowserWindow.getFocusedWindow()
         if (win) {
           win.toggleDevTools()
         }
     }
 
     closeWindow () {
-        const win = BrowserWindow.getFocusedWindow();
+        const win = BrowserWindow.getFocusedWindow()
         if (win) {
             const id = win.id
             win.close()
@@ -49,13 +54,13 @@ module.exports = class WindowManager
     }
 
     send (event_name, ...parameters) {
-        const win = BrowserWindow.getFocusedWindow();
+        const win = BrowserWindow.getFocusedWindow()
         if (win) {
             win.webContents.send(event_name, ...parameters)
         }
     }
 
-    createNewWindow () {
+    createNewWindow (ready_func) {
         const self = this
         const win = new BrowserWindow({
             width: 800,
@@ -63,9 +68,19 @@ module.exports = class WindowManager
             titleBarStyle: 'hidden',
             minWidth: 400,
             minHeight: 400,
-            resizeable: true
+            resizeable: true,
+            show: false
         })
         const id = win.id
+        win.setSheetOffset(23)
+        win.dirty = false
+
+        win.once('ready-to-show', () => {
+            if (ready_func) {
+                ready_func()
+            }
+            win.show()
+        })
 
         win.loadURL(url.format({
             pathname: path.join(__dirname, "../html/index.html"),
@@ -82,20 +97,32 @@ module.exports = class WindowManager
             }
         })
 
+        win.on('close', (ev) => {
+            if (win.dirty) {
+                const choices = ["Save", "Discard", "Cancel"]
+                var choice = dialog.showMessageBox(win,
+                {
+                    title: "Do you want to save changes to this file?",
+                    message: "If you do not save the file, any changes you have made will be lost.",
+                    buttons: choices,
+                    defaultId: 0,
+                    cancelId: 2
+                });
+                if(choices[choice] == "Save"){
+                    ev.preventDefault();
+                    win.webContents.send('save-file-request', 'save-file-data', 'save-new-file-data')
+                } else if (choices[choice] == "Cancel") {
+                    ev.preventDefault();
+                }
+            }
+        })
+
         win.on('blur', () => {
             win.webContents.send('window-blur')
         })
 
         win.on('focus', () => {
             win.webContents.send('window-focus')
-        })
-
-        win.on('enter-full-screen', () => {
-            win.webContents.send('enter-full-screen')
-        })
-
-        win.on('leave-full-screen', () => {
-            win.webContents.send('leave-full-screen')
         })
 
         this.windows.set(id, win)

@@ -1,7 +1,48 @@
 const {
     app,
-    Menu
+    Menu,
+    dialog
 } = require('electron')
+const fs = require('fs')
+const path = require('path')
+
+
+function open_file (wm) {
+    dialog.showOpenDialog({
+        filters:[
+            { name: 'Proof', extensions: ['proof'] },
+            { name: 'Plain', extensions: ['txt']}
+        ],
+        properties: [
+            "createDirectory",
+            "openFile",
+            "multiSelections"
+        ]
+    }, (filenames) => {
+        if (filenames == undefined) {
+            console.log("No file selected")
+            return ;
+        }
+        for (var i = 0; i < filenames.length; i++) {
+            const filename = filenames[i]
+            fs.readFile(filename, 'utf8', (err, data) => {
+                if (err) {
+                    dialog.showErrorBox("Failed to open file " + path.basename(filename),
+                            "The file could not be opened: " + err.message)
+                    return ;
+                }
+                const win = wm.createNewWindow(() => {
+                    win.webContents.send('set-title',
+                                         path.basename(filename,
+                                                       path.extname(filename)),
+                                         true)
+                    win.filename = filename
+                    win.webContents.send('show-file-data', data)
+                })
+            })
+        }
+    })
+}
 
 
 module.exports = class Menubar
@@ -25,7 +66,7 @@ module.exports = class Menubar
                         label: 'Open...',
                         accelerator: 'CmdOrCtrl+O',
                         click () {
-                            self.wm.send('open-file-data', "Unable to open files yet.")
+                            open_file(self.wm)
                         }
                     },
                     {
@@ -35,14 +76,14 @@ module.exports = class Menubar
                         label: "Save",
                         accelerator: 'CmdOrCtrl+S',
                         click () {
-                            self.wm.send('save-file-request', "Unable to save files yet.")
+                            self.wm.send('save-file-request', 'save-file-data', 'save-new-file-data')
                         }
                     },
                     {
                         label: "Save As...",
                         accelerator: 'Shift+CmdOrCtrl+S',
                         click () {
-                            self.wm.send('save-file-request', "Unable to save files yet.")
+                            self.wm.send('save-as-file-request', 'save-new-file-data')
                         }
                     },
                     {

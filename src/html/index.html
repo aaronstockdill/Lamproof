@@ -38,24 +38,29 @@
         <script src='../js/proof_editor.js'></script>
         <script src='../js/layout.js'></script>
         <script>
-            const {ipcRenderer} = require('electron');
+            const {ipcRenderer, remote} = require('electron')
+            const dialog = remote.dialog
+            const this_id = remote.getCurrentWindow().id
+            var on_disk = false
+            var dirty = false
 
             ipcRenderer.on('window-blur', (event) => {
                 document.getElementById('titlebar').style.opacity = 0.5;
             })
+
             ipcRenderer.on('window-focus', (event) => {
                 document.getElementById('titlebar').style.opacity = 1;
             })
-            ipcRenderer.on('set-title', (event, name) => {
+
+            ipcRenderer.on('set-title', (event, name, ondisk) => {
                 const new_title = name + " — Lamproof"
                 document.getElementById('titlebar').innerHTML = new_title
                 document.title = new_title
-            })
-            ipcRenderer.on('enter-full-screen', () => {
-                document.getElementById('titlebar').style.height = '0px';
-            })
-            ipcRenderer.on('leave-full-screen', () => {
-                document.getElementById('titlebar').style.height = '1.5rem';
+                on_disk = ondisk
+                ipcRenderer.send('set-dirty',
+                                 this_id,
+                                 false)
+                dirty = false
             })
 
             ipcRenderer.send('ready-to-show')
@@ -69,12 +74,37 @@
             const resizer = document.getElementById("resizer")
             const layout = new Layout(resizer, theorembox, proofbox, thm)
 
-            ipcRenderer.on('save-file-request', (event, string) => {
-                alert(string)
+            ipcRenderer.on('save-as-file-request', (event, callback) => {
+                ipcRenderer.send(callback,
+                                 document.title.replace(" — Lamproof", ""),
+                                 thm.getPlainText(),
+                                 proofer.getPlainText())
             })
 
-            ipcRenderer.on('open-file-data', (event, string) => {
-                alert(string)
+            ipcRenderer.on('save-file-request', (event, callback1, callback2) => {
+                if (on_disk) {
+                    ipcRenderer.send(callback1,
+                                     thm.getPlainText(),
+                                     proofer.getPlainText())
+                } else {
+                    ipcRenderer.send(callback2,
+                                     document.title.replace(" — Lamproof", ""),
+                                     thm.getPlainText(),
+                                     proofer.getPlainText())
+                }
+            })
+
+            ipcRenderer.on('open-file-data', (event, callback) => {
+                console.log(callback)
+                ipcRenderer.send(callback)
+            })
+
+            ipcRenderer.on('show-file-data', (event, data) => {
+                const parts = data.split("\nProof:\n")
+                var theorem = parts[0].replace("Theorem:\n\t", "")
+                var proof = parts[1]
+                thm.fromText(theorem)
+                proofer.fromText(proof)
             })
         </script>
     </body>
