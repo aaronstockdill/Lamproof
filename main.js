@@ -102,6 +102,39 @@ ipcMain.on('save-new-file-data', (ev, basename, thm, prfs) => {
     })
 })
 
+ipcMain.on('export-as', (ev, basename, output, type) => {
+    const win = wm.getFocusedWindow()
+    if (type === 'LaTeX') {
+        fmt = { name: "LaTeX", extensions: ['ltx', 'ltex', 'latex', 'tex'] }
+        basename += '.tex'
+    } else if (type === 'HTML') {
+        fmt = { name: "HTML", extensions: ['htm', 'html'] }
+        basename += '.html'
+    }
+    dialog.showSaveDialog(win, {
+        filters:[
+            fmt,
+            { name: "Plain", extensions: ['txt'] }
+        ],
+        title: 'Export As...',
+        defaultPath: basename,
+    }, (filename) => {
+        if (filename === undefined){
+            console.log("You didn't export the file")
+            return;
+        }
+        fs.writeFile(filename, output, function (err) {
+            if(err){
+                console.log(err)
+                dialog.showErrorBox("Failed to export " + path.basename(filename),
+                                    "The file could not be saved: " + err.message)
+            }
+
+            console.log("The file has been succesfully exported")
+        });
+    })
+})
+
 ipcMain.on('set-dirty', (ev, id, value) => {
     var win = wm.windows.get(id)
     if (win == undefined) {

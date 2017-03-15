@@ -87,6 +87,17 @@ module.exports = class Menubar
                         }
                     },
                     {
+                        label: "Export...",
+                        submenu: [
+                            {
+                                label: 'Export as LaTeX',
+                                click () {
+                                    self.wm.send('export-request', 'export-as', 'LaTeX')
+                                }
+                            }
+                        ]
+                    },
+                    {
                         type: 'separator'
                     },
                     {

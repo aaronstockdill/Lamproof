@@ -36,6 +36,7 @@
 
         <script src='../js/math_editor.js'></script>
         <script src='../js/proof_editor.js'></script>
+        <script src='../js/exporter.js'></script>
         <script src='../js/layout.js'></script>
         <script>
             const {ipcRenderer, remote} = require('electron')
@@ -92,6 +93,19 @@
                                      thm.getPlainText(),
                                      proofer.getPlainText())
                 }
+            })
+
+            ipcRenderer.on('export-request', (event, callback, type) => {
+                console.log(callback)
+                if (type === 'LaTeX') {
+                    output = asTeX(thm, proofer)
+                } else if (type === 'HTML') {
+                    output = asHTML(thm, proofer)
+                }
+                ipcRenderer.send(callback,
+                                 document.title.replace(" — Lamproof", ""),
+                                 output,
+                                 type)
             })
 
             ipcRenderer.on('open-file-data', (event, callback) => {
